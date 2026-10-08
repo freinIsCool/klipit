@@ -1,0 +1,15 @@
+[package]
+name = "klipit"
+version = "0.0.0-indev"
+edition = "2024"
+license = "MIT"
+
+[[bin]]
+name = "klipit"
+path = "src/main.rs"
+
+[lints.rust]
+unused = "allow"
+
+[dependencies]
+ashpd = { version = "0.13", features = ["screencast"] }
