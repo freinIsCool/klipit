@@ -37,10 +37,16 @@ pub fn connect(fd: OwnedFd, node_id: u32) -> Result<(), Box<dyn std::error::Erro
         })
         .process(|stream, _| {
             println!("PROCESS!");
+        if let Some(mut buffer) = stream.dequeue_buffer() {
+            for data in buffer.datas_mut() {
+                println!("chunk: {:?}", data.chunk());
 
-            if let Some(_buffer) = stream.dequeue_buffer() {
-                println!("GOT BUFFER!");
+                if let Some(bytes) = data.data() {
+                    println!("frame size: {} bytes", bytes.len());
+                    println!("first 16 bytes: {:?}", &bytes[..bytes.len().min(16)]);
+                }
             }
+        }
         })
         .register()?;
 
