@@ -11,5 +11,8 @@ path = "src/main.rs"
 [lints.rust]
 unused = "allow"
 
+
 [dependencies]
-ashpd = { version = "0.13", features = ["screencast"] }
+ashpd = { version = "0.13.13", features = ["screencast", "pipewire"] }
+pipewire = "0.9"
+tokio = "1.53.2"

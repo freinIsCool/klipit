@@ -1,16 +1,19 @@
-#[path = "recording/ffmpeg.rs"]
-mod ffmpeg;
+#[path = "recording/recording.rs"]
+mod recording;
 
-#[path ="recording/screencast.rs"]
-mod screencast;
+use recording::screencast;
 
-use std::{thread, time::Duration};
+use std::{path, thread, time::Duration};
 
 fn main() {
     println!("hello");
 
-    if let Err(err) = ffmpeg::main() {
-        eprintln!("ffmpeg failed: {err}");
+    if let Err(err) = tokio::runtime::Runtime::new()
+        .expect("failed to create tokio runtime")
+        .block_on(screencast::run())
+    {
+        eprintln!("screencast failed: {err}");
         std::process::exit(1);
     }
+    
 }
