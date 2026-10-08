@@ -39,5 +39,7 @@ pub async fn run() -> ashpd::Result<()> {
 
     println!("PipeWire FD: {fd:?}");
 
+    crate::recording::pipewire::connect(fd, node_id);
+
     Ok(())
 }

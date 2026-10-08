@@ -4,7 +4,6 @@ use pipewire as pw;
 use std::os::fd::OwnedFd;
 
 pub fn connect(
-    _session: ashpd::desktop::Session<Screencast>,
     fd: OwnedFd,
     node_id: u32,
 ) -> Result<(), Box<dyn std::error::Error>> {
