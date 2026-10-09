@@ -9,6 +9,7 @@ use ashpd::desktop::{
     global_shortcuts::{Activated, GlobalShortcuts, NewShortcut},
 };
 use futures_util::StreamExt;
+use notify_rust::Notification;
 
 const APP_ID: &str = "io.github.freinisCool.Klipit";
 
@@ -95,6 +96,14 @@ async fn forward_activations(
 ) {
     while let Some(event) = activated.next().await {
         if event.shortcut_id() == "save-clip" {
+            if let Err(error) = Notification::new()
+                .summary("Clip Saved!")
+                .body("clip has been Saved")
+                .show_async()
+                .await
+            {
+                eprintln!("Failed to send clip notification: {error}");
+            }
             println!("Save clip shortcut activated");
             if sender.send(()).is_err() {
                 break;

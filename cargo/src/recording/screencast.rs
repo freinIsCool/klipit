@@ -2,8 +2,21 @@ use ashpd::desktop::{
     PersistMode,
     screencast::{CursorMode, Screencast, SelectSourcesOptions, SourceType},
 };
+use std::sync::mpsc::Sender;
 
-pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
+/// Starts the screencast portal and notifies the caller once a source was selected.
+pub async fn run(ready: Sender<Result<(), String>>) -> Result<(), Box<dyn std::error::Error>> {
+    let result = run_inner(&ready).await;
+
+    if let Err(error) = &result {
+        // The UI is waiting for this result before it creates its window.
+        let _ = ready.send(Err(error.to_string()));
+    }
+
+    result
+}
+
+async fn run_inner(ready: &Sender<Result<(), String>>) -> Result<(), Box<dyn std::error::Error>> {
     crate::recording::shortcuts::register_host_app().await?;
 
     let proxy = Screencast::new().await?;
@@ -25,13 +38,20 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
         .await?
         .response()?;
 
-    let stream = response.streams().first().expect("No streams returned");
+    let stream = response
+        .streams()
+        .first()
+        .ok_or("No screencast source was selected")?;
 
     let node_id = stream.pipe_wire_node_id();
 
     println!("node id: {node_id}");
     println!("size: {:?}", stream.size());
     println!("position: {:?}", stream.position());
+
+    // The portal has finished its screen-selection flow, so the main thread can
+    // now create the application's window while recording setup continues here.
+    let _ = ready.send(Ok(()));
 
     let fd = proxy
         .open_pipe_wire_remote(&session, Default::default())

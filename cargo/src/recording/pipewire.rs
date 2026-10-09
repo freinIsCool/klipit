@@ -16,7 +16,7 @@ use std::{
     time::Duration,
 };
 
-const SEGMENT_DURATION_SECONDS: usize = 2;
+const SEGMENT_DURATION_SECONDS: usize = 1;
 
 pub fn connect(
     fd: OwnedFd,
@@ -42,6 +42,7 @@ pub fn connect(
 
     let (frame_sender, recorder) =
         crate::recording::ffmpeg::start_segmented_recording(SEGMENT_DURATION_SECONDS)?;
+    let audio_capture = crate::recording::audio::AudioCapture::start(frame_sender.clone())?;
 
     let ctrl_c_received = Arc::new(AtomicBool::new(false));
     let ctrl_c_flag = Arc::clone(&ctrl_c_received);
@@ -64,7 +65,7 @@ pub fn connect(
         let shortcut_disconnected = Cell::new(false);
         move |_| {
             if timer_ctrl_c_flag.load(Ordering::Acquire) {
-                eprintln!("Ctrl+C received; stopping capture and finalizing segments.");
+                eprintln!("Ctrl+C received; stopping capture and removing temporary segments.");
                 timer_mainloop.quit();
                 return;
             }
@@ -107,10 +108,10 @@ pub fn connect(
             }
         })
         .param_changed(|_, _, id, param| {
-            println!("PARAM: id={id}, param={:?}", param.map(|p| p.as_bytes()));
+            print!("");
         })
         .add_buffer(|_, _, buffer| {
-            println!("BUFFER ADDED: {buffer:?}");
+            print!("");
         })
         .process({
             let frame_sender = frame_sender.clone();
@@ -248,12 +249,14 @@ pub fn connect(
     drop(_listener);
     drop(_sigterm);
     drop(ctrl_c_timer);
-    eprintln!("Capture stopped; finalizing segments and compiling retained clips.");
+    eprintln!("Capture stopped; finalizing segment files and cleaning up temporary segments.");
+    let audio_result = audio_capture.stop();
     drop(frame_sender);
-    recorder
+    let recorder_result = recorder
         .join()
-        .map_err(|_| std::io::Error::other("Video segment writer thread panicked"))?
-        .map_err(std::io::Error::other)?;
+        .map_err(|_| std::io::Error::other("Video segment writer thread panicked"))?;
+    audio_result.map_err(std::io::Error::other)?;
+    recorder_result.map_err(std::io::Error::other)?;
 
     Ok(())
 }
