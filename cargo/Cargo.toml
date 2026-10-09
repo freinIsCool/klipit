@@ -1,6 +1,6 @@
 [package]
 name = "klipit"
-version = "0.0.0-indev"
+version = "1.0.0-beta"
 edition = "2024"
 license = "MIT"
 
