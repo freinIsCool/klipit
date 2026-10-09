@@ -8,7 +8,7 @@ an open-source [medal.tv](https://medal.tv/) wayland-native and linux alternativ
 ### notes:
 1. you do **not** get the perks of medal.tv in games (partnerships)
 2. klipit does **not** have a "clips db"
-3. the default codec is h264_nvenc (nvidia only) for amd see PLACEHOLDER
+3. the default codec is h264_nvenc (nvidia only) for amd see [AMD.txt](https://github.com/freinIsCool/klipit/blob/main/AMD.txt)
 
 
 ## building from source
