@@ -4,11 +4,25 @@ use pipewire::{self as pw};
 
 use pipewire::properties::properties;
 
-use std::{os::fd::OwnedFd, rc::Rc};
+use std::{
+    cell::Cell,
+    os::fd::OwnedFd,
+    rc::Rc,
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+        mpsc::{Receiver, TryRecvError, TrySendError},
+    },
+    time::Duration,
+};
 
 const SEGMENT_DURATION_SECONDS: usize = 2;
 
-pub fn connect(fd: OwnedFd, node_id: u32) -> Result<(), Box<dyn std::error::Error>> {
+pub fn connect(
+    fd: OwnedFd,
+    node_id: u32,
+    shortcut_events: Receiver<()>,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     pw::init();
 
     let mainloop = Rc::new(pw::main_loop::MainLoopBox::new(None)?);
@@ -29,19 +43,56 @@ pub fn connect(fd: OwnedFd, node_id: u32) -> Result<(), Box<dyn std::error::Erro
     let (frame_sender, recorder) =
         crate::recording::ffmpeg::start_segmented_recording(SEGMENT_DURATION_SECONDS)?;
 
+    let ctrl_c_received = Arc::new(AtomicBool::new(false));
+    let ctrl_c_flag = Arc::clone(&ctrl_c_received);
+    ctrlc::set_handler(move || {
+        ctrl_c_flag.store(true, Ordering::Release);
+    })?;
+
     let state_mainloop = Rc::clone(&mainloop);
-    let signal_mainloop = Rc::clone(&mainloop);
-    let _sigint = mainloop
-        .loop_()
-        .add_signal_local(pw::loop_::Signal::SIGINT, move || {
-            signal_mainloop.quit();
-        });
     let term_mainloop = Rc::clone(&mainloop);
     let _sigterm = mainloop
         .loop_()
         .add_signal_local(pw::loop_::Signal::SIGTERM, move || {
             term_mainloop.quit();
         });
+    let timer_mainloop = Rc::clone(&mainloop);
+    let timer_ctrl_c_flag = Arc::clone(&ctrl_c_received);
+    let compile_sender = frame_sender.clone();
+    let ctrl_c_timer = mainloop.loop_().add_timer({
+        let save_requested = Cell::new(false);
+        let shortcut_disconnected = Cell::new(false);
+        move |_| {
+            if timer_ctrl_c_flag.load(Ordering::Acquire) {
+                eprintln!("Ctrl+C received; stopping capture and finalizing segments.");
+                timer_mainloop.quit();
+                return;
+            }
+
+            if !save_requested.get() {
+                match shortcut_events.try_recv() {
+                    Ok(()) => save_requested.set(true),
+                    Err(TryRecvError::Empty) => {}
+                    Err(TryRecvError::Disconnected) if !shortcut_disconnected.get() => {
+                        eprintln!("Global shortcut listener disconnected.");
+                        shortcut_disconnected.set(true);
+                    }
+                    Err(TryRecvError::Disconnected) => {}
+                }
+            }
+
+            if save_requested.get() {
+                match compile_sender.try_send(crate::recording::ffmpeg::RecorderCommand::SaveClip) {
+                    Ok(()) => save_requested.set(false),
+                    Err(TrySendError::Full(_)) => {}
+                    Err(TrySendError::Disconnected(_)) => {
+                        eprintln!("Video recorder stopped; cannot save a clip.");
+                        save_requested.set(false);
+                    }
+                }
+            }
+        }
+    });
     let _listener = stream
         .add_local_listener_with_user_data(())
         .state_changed(move |_, _, old, new| {
@@ -62,13 +113,18 @@ pub fn connect(fd: OwnedFd, node_id: u32) -> Result<(), Box<dyn std::error::Erro
             println!("BUFFER ADDED: {buffer:?}");
         })
         .process({
+            let frame_sender = frame_sender.clone();
             let mut recorder_stopped = false;
             move |stream, _| {
                 if let Some(mut buffer) = stream.dequeue_buffer() {
                     for data in buffer.datas_mut() {
                         if let Some(bytes) = data.data() {
                             if !recorder_stopped {
-                                if let Err(err) = frame_sender.send(bytes.to_vec()) {
+                                if let Err(err) = frame_sender.send(
+                                    crate::recording::ffmpeg::RecorderCommand::Frame(
+                                        bytes.to_vec(),
+                                    ),
+                                ) {
                                     eprintln!("Video segment writer stopped: {err}");
                                     recorder_stopped = true;
                                 }
@@ -182,10 +238,18 @@ pub fn connect(fd: OwnedFd, node_id: u32) -> Result<(), Box<dyn std::error::Erro
     println!("Connected to PipeWire!");
     println!("Target node: {node_id}");
 
+    ctrl_c_timer
+        .update_timer(
+            Some(Duration::from_millis(100)),
+            Some(Duration::from_millis(100)),
+        )
+        .into_result()?;
     mainloop.run();
     drop(_listener);
-    drop(_sigint);
     drop(_sigterm);
+    drop(ctrl_c_timer);
+    eprintln!("Capture stopped; finalizing segments and compiling retained clips.");
+    drop(frame_sender);
     recorder
         .join()
         .map_err(|_| std::io::Error::other("Video segment writer thread panicked"))?

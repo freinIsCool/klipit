@@ -4,8 +4,11 @@ use ashpd::desktop::{
 };
 
 pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
+    crate::recording::shortcuts::register_host_app().await?;
+
     let proxy = Screencast::new().await?;
-    let session: ashpd::desktop::Session<Screencast> = proxy.create_session(Default::default()).await?;
+    let session: ashpd::desktop::Session<Screencast> =
+        proxy.create_session(Default::default()).await?;
     proxy
         .select_sources(
             &session,
@@ -21,11 +24,8 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
         .start(&session, None, Default::default())
         .await?
         .response()?;
-    
-    let stream = response
-        .streams()
-        .first()
-        .expect("No streams returned");
+
+    let stream = response.streams().first().expect("No streams returned");
 
     let node_id = stream.pipe_wire_node_id();
 
@@ -39,7 +39,9 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("PipeWire FD: {fd:?}");
 
-    crate::recording::pipewire::connect(fd, node_id)?;
+    let shortcut_registration = crate::recording::shortcuts::register().await?;
+    crate::recording::pipewire::connect(fd, node_id, shortcut_registration.events)
+        .map_err(|error| std::io::Error::other(error.to_string()))?;
 
     Ok(())
 }
