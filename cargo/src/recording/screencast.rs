@@ -3,7 +3,7 @@ use ashpd::desktop::{
     screencast::{CursorMode, Screencast, SelectSourcesOptions, SourceType},
 };
 
-pub async fn run() -> ashpd::Result<()> {
+pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let proxy = Screencast::new().await?;
     let session: ashpd::desktop::Session<Screencast> = proxy.create_session(Default::default()).await?;
     proxy
@@ -39,7 +39,7 @@ pub async fn run() -> ashpd::Result<()> {
 
     println!("PipeWire FD: {fd:?}");
 
-    crate::recording::pipewire::connect(fd, node_id);
+    crate::recording::pipewire::connect(fd, node_id)?;
 
     Ok(())
 }
