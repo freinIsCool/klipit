@@ -1,0 +1,6 @@
+for amd support 
+1. go to cargo/src/recording/ffmpeg.rs
+2. go to line 188 col 27
+3. replace "h264_nvenc" with "h264_amf" (or libx264 if you want to use your cpu, works on nvidia too)
+
+follow the build instructions in README.md
