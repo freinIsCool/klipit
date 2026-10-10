@@ -8,8 +8,9 @@ use std::sync::mpsc::{Receiver, Sender};
 pub async fn run(
     ready: Sender<Result<(), String>>,
     shutdown_events: Receiver<()>,
+    save_clip_events: Receiver<()>,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let result = run_inner(&ready, shutdown_events).await;
+    let result = run_inner(&ready, shutdown_events, save_clip_events).await;
 
     if let Err(error) = &result {
         // The UI is waiting for this result before it creates its window.
@@ -22,6 +23,7 @@ pub async fn run(
 async fn run_inner(
     ready: &Sender<Result<(), String>>,
     shutdown_events: Receiver<()>,
+    save_clip_events: Receiver<()>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     crate::recording::shortcuts::register_host_app().await?;
 
@@ -66,8 +68,14 @@ async fn run_inner(
     println!("PipeWire FD: {fd:?}");
 
     let shortcut_registration = crate::recording::shortcuts::register().await?;
-    crate::recording::pipewire::connect(fd, node_id, shortcut_registration.events, shutdown_events)
-        .map_err(|error| std::io::Error::other(error.to_string()))?;
+    crate::recording::pipewire::connect(
+        fd,
+        node_id,
+        shortcut_registration.events,
+        shutdown_events,
+        save_clip_events,
+    )
+    .map_err(|error| std::io::Error::other(error.to_string()))?;
 
     Ok(())
 }

@@ -23,6 +23,7 @@ pub fn connect(
     node_id: u32,
     shortcut_events: Receiver<()>,
     shutdown_events: Receiver<()>,
+    save_clip_events: Receiver<()>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     pw::init();
 
@@ -86,6 +87,13 @@ pub fn connect(
                         shortcut_disconnected.set(true);
                     }
                     Err(TryRecvError::Disconnected) => {}
+                }
+
+                if !save_requested.get() {
+                    match save_clip_events.try_recv() {
+                        Ok(()) => save_requested.set(true),
+                        Err(TryRecvError::Empty | TryRecvError::Disconnected) => {}
+                    }
                 }
             }
 

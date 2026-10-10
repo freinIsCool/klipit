@@ -16,6 +16,7 @@ fn main() {
     let (ready_sender, ready_receiver) = mpsc::channel();
     let (shutdown_sender, shutdown_receiver) = mpsc::channel();
     let (capture_shutdown_sender, capture_shutdown_receiver) = mpsc::channel();
+    let (save_clip_sender, save_clip_receiver) = mpsc::channel();
     let capture_thread = thread::Builder::new()
         // pipewire-rs requires its local main loop to be created on a thread
         // named `main`. The UI still stays on the actual process main thread.
@@ -23,7 +24,11 @@ fn main() {
         .spawn(move || {
             let result = tokio::runtime::Runtime::new()
                 .expect("failed to create tokio runtime")
-                .block_on(screencast::run(ready_sender, capture_shutdown_receiver));
+                .block_on(screencast::run(
+                    ready_sender,
+                    capture_shutdown_receiver,
+                    save_clip_receiver,
+                ));
 
             if let Err(err) = result {
                 eprintln!("screencast failed: {err}");
@@ -48,7 +53,7 @@ fn main() {
     }
 
     // eframe must own the main thread to create and run its native window.
-    let ui_result = ui::main::main(capture_shutdown_sender.clone());
+    let ui_result = ui::main::main(capture_shutdown_sender.clone(), save_clip_sender);
     // `on_exit` sends this during a normal close. Send it here as well so a
     // failure while creating the UI cannot leave the capture thread running.
     let _ = capture_shutdown_sender.send(());

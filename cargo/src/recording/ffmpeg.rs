@@ -28,7 +28,7 @@ struct RecordedSegment {
     audio: Vec<u8>,
 }
 
-struct ClipSaveJob {
+pub struct ClipSaveJob {
     segments: Vec<Arc<RecordedSegment>>,
     output_path: PathBuf,
 }
@@ -230,7 +230,7 @@ fn record_segments_inner(
     Ok(())
 }
 
-fn save_clips(receiver: Receiver<ClipSaveJob>) -> Result<(), String> {
+pub fn save_clips(receiver: Receiver<ClipSaveJob>) -> Result<(), String> {
     let process_id = std::process::id();
     for job in receiver {
         match compile_segments_with_audio(&job.segments, &job.output_path, process_id) {
