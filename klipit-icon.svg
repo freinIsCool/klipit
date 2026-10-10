@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
+  <defs>
+    <style>
+      .cls-1{fill:url(#linear-gradient-1)}
+      .cls-2{fill:url(#linear-gradient-2)}
+      .cls-3{fill:url(#linear-gradient-3)}
+      .cls-4{fill:url(#linear-gradient-4)}
+      .cls-5{fill:url(#linear-gradient-5)}
+      .cls-6{fill:url(#linear-gradient-6)}
+      .cls-7{fill:url(#linear-gradient-7)}
+    </style>
+    <linearGradient id="linear-gradient-1" x1="19.294" y1="12.159" x2="14.935" y2="7.968" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#94ff90"/>
+      <stop offset="1" stop-color="#00a30c"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="14.441" y1="24.601" x2="19.476" y2="20.702" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#94ff90"/>
+      <stop offset="1" stop-color="#00a30c"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="13.462" y1="13.905" x2="7.059" y2="13.905" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#94ff90"/>
+      <stop offset="1" stop-color="#00a30c"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-4" x1="26.923" y1="5.668" x2="22.913" y2="5.837" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#94ff90"/>
+      <stop offset="1" stop-color="#00a30c"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-5" x1="22.048" y1="4.282" x2="21.962" y2="0.882" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#94ff90"/>
+      <stop offset="1" stop-color="#00a30c"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-6" x1="20.753" y1="31.232" x2="20.692" y2="27.218" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#94ff90"/>
+      <stop offset="1" stop-color="#00a30c"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-7" x1="21.427" y1="27.07" x2="24.827" y2="27.075" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#94ff90"/>
+      <stop offset="1" stop-color="#00a30c"/>
+    </linearGradient>
+  </defs>
+  <title>Untitled-1</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <path d="M21.706 2.584 L24.297 5.075 C24.816 5.574 25.074 6.147 24.873 6.356 L11.379 20.393 C11.178 20.602 10.595 20.367 10.077 19.869 L7.485 17.378 C6.967 16.879 6.709 16.306 6.91 16.097 L20.404 2.06 C20.604 1.851 21.187 2.086 21.706 2.584 Z" class="cls-1"/>
+    <path d="M23.768 28.223 L20.775 30.541 C20.176 31.005 19.547 31.195 19.369 30.966 L7.448 15.57 C7.271 15.341 7.613 14.78 8.212 14.316 L11.205 11.999 C11.804 11.535 12.433 11.345 12.61 11.574 L24.531 26.969 C24.708 27.198 24.367 27.76 23.768 28.223 Z" class="cls-2"/>
+    <path d="M8.277 1.745 L12.083 1.745 C12.845 1.745 13.462 2.078 13.462 2.489 L13.462 30.102 C13.462 30.512 12.845 30.845 12.083 30.845 L8.277 30.845 C7.515 30.845 6.898 30.512 6.898 30.102 L6.898 2.489 C6.898 2.078 7.515 1.745 8.277 1.745 Z" class="cls-3"/>
+    <path d="M23.465 0.787 L25.849 0.686 C26.326 0.666 26.718 0.788 26.725 0.957 L27.205 12.352 C27.212 12.521 26.831 12.675 26.354 12.695 L23.97 12.795 C23.493 12.815 23.101 12.694 23.093 12.525 L22.614 1.13 C22.607 0.961 22.988 0.807 23.465 0.787 Z" class="cls-4"/>
+    <path d="M26.68 1.409 L26.731 3.43 C26.741 3.834 26.621 4.165 26.462 4.169 L15.786 4.441 C15.627 4.445 15.49 4.121 15.479 3.716 L15.428 1.695 C15.418 1.291 15.538 0.96 15.697 0.956 L26.374 0.684 C26.532 0.68 26.669 1.005 26.68 1.409 Z" class="cls-5"/>
+    <path d="M24.883 27.918 L24.919 30.304 C24.926 30.782 24.818 31.17 24.677 31.172 L15.186 31.316 C15.045 31.318 14.924 30.933 14.917 30.455 L14.881 28.07 C14.874 27.592 14.982 27.204 15.124 27.201 L24.615 27.058 C24.756 27.056 24.876 27.441 24.883 27.918 Z" class="cls-6"/>
+    <path d="M24.175 31.116 L22.153 31.113 C21.749 31.112 21.421 31.001 21.421 30.864 L21.435 21.687 C21.435 21.551 21.763 21.44 22.168 21.441 L24.189 21.444 C24.594 21.445 24.921 21.556 24.921 21.692 L24.907 30.87 C24.907 31.006 24.579 31.116 24.175 31.116 Z" class="cls-7"/>
+  </g>
+</svg>
