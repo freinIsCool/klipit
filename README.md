@@ -2,7 +2,8 @@
 it is functional but does **not** have a gui
 nor a settings gui/file (to adjust them you need to know rust)
 
-# klipit
+<img width="267" height="150" alt="klipit" src="https://github.com/user-attachments/assets/08f8d359-c9cc-4633-b534-813b8385a7f4" />
+
 an open-source [medal.tv](https://medal.tv/) wayland-native and linux alternative
 
 ### notes:
@@ -15,13 +16,7 @@ an open-source [medal.tv](https://medal.tv/) wayland-native and linux alternativ
 yay!
 
 requirements:
-* `ashpd`
-* `ctrlc`
-* `ez-ffmpeg`
-* `futures-util`
-* `libspa`
-* `pipewire` (crate and package)
-* `tokio`
+* `pipewire`
 * `rust`
 * `cargo`
 
