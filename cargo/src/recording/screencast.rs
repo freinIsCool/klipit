@@ -2,11 +2,14 @@ use ashpd::desktop::{
     PersistMode,
     screencast::{CursorMode, Screencast, SelectSourcesOptions, SourceType},
 };
-use std::sync::mpsc::Sender;
+use std::sync::mpsc::{Receiver, Sender};
 
 /// Starts the screencast portal and notifies the caller once a source was selected.
-pub async fn run(ready: Sender<Result<(), String>>) -> Result<(), Box<dyn std::error::Error>> {
-    let result = run_inner(&ready).await;
+pub async fn run(
+    ready: Sender<Result<(), String>>,
+    shutdown_events: Receiver<()>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let result = run_inner(&ready, shutdown_events).await;
 
     if let Err(error) = &result {
         // The UI is waiting for this result before it creates its window.
@@ -16,7 +19,10 @@ pub async fn run(ready: Sender<Result<(), String>>) -> Result<(), Box<dyn std::e
     result
 }
 
-async fn run_inner(ready: &Sender<Result<(), String>>) -> Result<(), Box<dyn std::error::Error>> {
+async fn run_inner(
+    ready: &Sender<Result<(), String>>,
+    shutdown_events: Receiver<()>,
+) -> Result<(), Box<dyn std::error::Error>> {
     crate::recording::shortcuts::register_host_app().await?;
 
     let proxy = Screencast::new().await?;
@@ -60,7 +66,7 @@ async fn run_inner(ready: &Sender<Result<(), String>>) -> Result<(), Box<dyn std
     println!("PipeWire FD: {fd:?}");
 
     let shortcut_registration = crate::recording::shortcuts::register().await?;
-    crate::recording::pipewire::connect(fd, node_id, shortcut_registration.events)
+    crate::recording::pipewire::connect(fd, node_id, shortcut_registration.events, shutdown_events)
         .map_err(|error| std::io::Error::other(error.to_string()))?;
 
     Ok(())

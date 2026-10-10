@@ -17,6 +17,7 @@ ashpd = { version = "0.13.13", features = ["screencast", "pipewire", "global_sho
 ctrlc = "3.4"
 eframe = "0.36.2"
 egui = "0.36.2"
+egui_extras = { version = "0.36.2", features = ["svg"] }
 env_logger = "0.11.11"
 ez-ffmpeg = "0.19.3"
 futures-util = "0.3"

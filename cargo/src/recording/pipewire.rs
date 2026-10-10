@@ -22,6 +22,7 @@ pub fn connect(
     fd: OwnedFd,
     node_id: u32,
     shortcut_events: Receiver<()>,
+    shutdown_events: Receiver<()>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     pw::init();
 
@@ -64,6 +65,12 @@ pub fn connect(
         let save_requested = Cell::new(false);
         let shortcut_disconnected = Cell::new(false);
         move |_| {
+            if shutdown_events.try_recv().is_ok() {
+                eprintln!("Window closed; stopping capture.");
+                timer_mainloop.quit();
+                return;
+            }
+
             if timer_ctrl_c_flag.load(Ordering::Acquire) {
                 eprintln!("Ctrl+C received; stopping capture and removing temporary segments.");
                 timer_mainloop.quit();

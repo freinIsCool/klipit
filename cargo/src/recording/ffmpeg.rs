@@ -59,7 +59,7 @@ pub(crate) fn start_segmented_recording(
         ));
     }
 
-    let clips_dir = clips_directory().map_err(io::Error::other)?;
+    let clips_dir: PathBuf = clips_directory().map_err(io::Error::other)?;
     fs::create_dir_all(&clips_dir)?;
     cleanup_stale_segments(&clips_dir)?;
 
@@ -244,7 +244,7 @@ fn save_clips(receiver: Receiver<ClipSaveJob>) -> Result<(), String> {
 
 const SEGMENT_COUNT: usize = 10;
 
-fn cleanup_stale_segments(clips_dir: &Path) -> io::Result<()> {
+pub fn cleanup_stale_segments(clips_dir: &Path) -> io::Result<()> {
     for entry in fs::read_dir(clips_dir)? {
         let entry = entry?;
         let name = entry.file_name();
@@ -266,6 +266,26 @@ fn cleanup_stale_segments(clips_dir: &Path) -> io::Result<()> {
 
         let process_path = Path::new("/proc").join(pid);
         if !process_path.exists() {
+            fs::remove_file(entry.path())?;
+        }
+    }
+
+    Ok(())
+}
+
+/// Removes temporary segments created by this process during normal shutdown.
+pub fn cleanup_current_process_segments(clips_dir: &Path) -> io::Result<()> {
+    let process_id = std::process::id();
+    let prefix = format!("test_segment_{process_id}_");
+
+    for entry in fs::read_dir(clips_dir)? {
+        let entry = entry?;
+        let name = entry.file_name();
+        let Some(name) = name.to_str() else {
+            continue;
+        };
+
+        if name.starts_with(&prefix) && name.ends_with(".mp4") {
             fs::remove_file(entry.path())?;
         }
     }
@@ -529,7 +549,7 @@ fn mux_aac_audio(video_path: &Path, audio: &[u8], output_path: &Path) -> Result<
     Ok(())
 }
 
-fn clips_directory() -> Result<PathBuf, String> {
+pub fn clips_directory() -> Result<PathBuf, String> {
     let videos_dir = Command::new("xdg-user-dir")
         .arg("VIDEOS")
         .output()
